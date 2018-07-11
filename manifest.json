@@ -1,0 +1,19 @@
+{
+	"name": "Download Closest Image",
+	"version": "0.1",
+	"description":
+		"This chrome extension adds a right click option to any element allowing the user to download the closest image found in the children of the DOM element. Most of the time it will download the image you're looking for, for example, you can now easily download InVision screens, facebook photos or memes etc...",
+	"permissions": ["contextMenus", "downloads", "<all_urls>"],
+	"background": {
+		"scripts": ["context-menu.js"],
+		"persistent": false
+	},
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["jquery-3.3.1.min.js", "content-script.js"],
+			"run_at": "document_end"
+		}
+	],
+	"manifest_version": 2
+}
