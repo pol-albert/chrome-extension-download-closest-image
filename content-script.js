@@ -6,13 +6,15 @@ document.addEventListener(
 	"contextmenu",
 	function(event) {
 		//right click
-		console.log(event.target);
 		clickedEl = event.target;
 	},
 	true
 );
 
-function recursivelySearchForImage($elt) {
+function recursivelySearchForImage($elt, isFirstCall) {
+	if (typeof isFirstCall == "undefined") {
+		isFirstCall = true;
+	}
 	var found = "";
 	if ($elt.is("img") && $elt.prop("src") && $elt.prop("src") !== "") {
 		return $elt.prop("src");
@@ -27,7 +29,7 @@ function recursivelySearchForImage($elt) {
 	var ret;
 	$elt.children().each(function(i, e) {
 		if (!found) {
-			ret = recursivelySearchForImage(jQu(e));
+			ret = recursivelySearchForImage(jQu(e), false);
 			if (ret) {
 				found = ret;
 			}
@@ -36,13 +38,20 @@ function recursivelySearchForImage($elt) {
 	if (found !== "") return found;
 	if ($elt.next().length) {
 		if (!found) {
-			ret = recursivelySearchForImage($elt.next());
+			ret = recursivelySearchForImage($elt.next(), false);
 			if (ret) {
 				found = ret;
 			}
 		}
 	}
 	if (found !== "") return found;
+	if (isFirstCall) {
+		ret = recursivelySearchForImage($elt.parent(), false);
+		if (ret) {
+			found = ret;
+		}
+		if (found !== "") return found;
+	}
 	return false;
 }
 
@@ -51,7 +60,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		var image = recursivelySearchForImage(jQu(clickedEl));
 
 		var appened = $(
-			'<div style="background:white;padding:1em;z-index:999999999;position:fixed;top:0;left:0;width:100%">' +
+			'<div style="box-shadow: 0px 0px 40px 0px rgba(0,0,0,0.75);background:white;padding:1em;z-index:999999999;position:fixed;top:0;left:0;width:100%">' +
 				'Image found ! <br/> <img style="border:2px solid #DDD;float:left;max-width:128px;max-height:128px;" src="' +
 				image +
 				'"/>' +
@@ -59,7 +68,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				    <input type="hidden" name="business"
 				        value="polalbert@gmail.com">
 				    <input type="hidden" name="cmd" value="_donations">
-				    <input type="hidden" name="item_name" value="Download Closest Image Donation">
+				    <input type="hidden" name="item_name" value="Closest image copy URL or download Donation">
 				    <input type="hidden" name="item_number" value="">
 				    <input type="hidden" name="currency_code" value="EUR">
 				    <input type="image" name="submit"
@@ -71,8 +80,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				"</div>"
 		).appendTo("body");
 		setTimeout(function() {
-			appened.fadeOut();
-		}, 6000);
+			appened.fadeOut(3000);
+		}, 8000);
 
 		sendResponse(image);
 	}

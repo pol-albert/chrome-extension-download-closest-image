@@ -2,11 +2,11 @@
 function onClickHandler(info, tab) {
 	chrome.tabs.sendMessage(tab.id, "getClickedEl", function(image) {
 		if (image) {
-			if (info.menuItemId == "dl") {
+			if (info.menuItemId.indexOf("dl") === 0) {
 				chrome.downloads.download({
 					url: image
 				});
-			} else if (info.menuItemId == "copyUrl") {
+			} else if (info.menuItemId.indexOf("copyUrl") === 0) {
 				copyToClipboard(image);
 			}
 		}
@@ -26,19 +26,17 @@ chrome.contextMenus.onClicked.addListener(onClickHandler);
 // Set up context menu tree at install time.
 chrome.runtime.onInstalled.addListener(function() {
 	// Create one test item for each context type.
-	var contexts = ["all"];
+	var contexts = ["page", "frame", "selection", "link", "editable", "image"];
 	for (var i = 0; i < contexts.length; i++) {
 		var context = contexts[i];
-		var title = "↧ Download the image";
 		var id = chrome.contextMenus.create({
-			id: "dl",
-			title: title,
+			id: "dl." + context,
+			title: "↧ Download the image",
 			contexts: [context]
 		});
-		var title = "📋 Copy URL of the image";
 		id = chrome.contextMenus.create({
-			id: "copyUrl",
-			title: title,
+			id: "copyUrl." + context,
+			title: "📋 Copy URL of the image",
 			contexts: [context]
 		});
 	}
