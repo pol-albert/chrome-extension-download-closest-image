@@ -1,13 +1,24 @@
 // The onClicked callback function.
 function onClickHandler(info, tab) {
-	setTimeout(function() {
-		chrome.tabs.sendMessage(tab.id, "getClickedEl", function(image) {
-			if (image)
+	chrome.tabs.sendMessage(tab.id, "getClickedEl", function(image) {
+		if (image) {
+			if (info.menuItemId == "dl") {
 				chrome.downloads.download({
 					url: image
 				});
-		});
-	}, 500);
+			} else if (info.menuItemId == "copyUrl") {
+				copyToClipboard(image);
+			}
+		}
+	});
+}
+
+function copyToClipboard(str) {
+	document.oncopy = function(event) {
+		event.clipboardData.setData("text/plain", str);
+		event.preventDefault();
+	};
+	document.execCommand("copy", false, null);
 }
 
 chrome.contextMenus.onClicked.addListener(onClickHandler);
@@ -18,11 +29,17 @@ chrome.runtime.onInstalled.addListener(function() {
 	var contexts = ["all"];
 	for (var i = 0; i < contexts.length; i++) {
 		var context = contexts[i];
-		var title = "Download the fisrt image you find";
+		var title = "↧ Download the image";
 		var id = chrome.contextMenus.create({
+			id: "dl",
 			title: title,
-			contexts: [context],
-			id: "context" + context
+			contexts: [context]
+		});
+		var title = "📋 Copy URL of the image";
+		id = chrome.contextMenus.create({
+			id: "copyUrl",
+			title: title,
+			contexts: [context]
 		});
 	}
 });
